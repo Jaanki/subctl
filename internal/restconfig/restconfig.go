@@ -432,21 +432,21 @@ func (rcp *Producer) RunOnAllContexts(function PerContextFn, status reporter.Int
 		for _, contextName := range rcp.contexts {
 			processedContexts++
 
-			chosenContext, ok := rawConfig.Contexts[contextName]
+			_, ok := rawConfig.Contexts[contextName]
 			if !ok {
 				contextErrors = append(contextErrors, status.Error(fmt.Errorf("no Kubernetes context found named %s", contextName), ""))
 
 				continue
 			}
 
-			contextErrors = append(contextErrors, rcp.overrideContextAndRun(chosenContext.Cluster, contextName, function, status))
+			contextErrors = append(contextErrors, rcp.overrideContextAndRun(contextName, function, status))
 		}
 	} else {
 		// Loop over all accessible contexts
-		for contextName, context := range rawConfig.Contexts {
+		for contextName, _ := range rawConfig.Contexts {
 			processedContexts++
 
-			contextErrors = append(contextErrors, rcp.overrideContextAndRun(context.Cluster, contextName, function, status))
+			contextErrors = append(contextErrors, rcp.overrideContextAndRun(contextName, function, status))
 		}
 	}
 
@@ -457,8 +457,8 @@ func (rcp *Producer) RunOnAllContexts(function PerContextFn, status reporter.Int
 	return k8serrors.NewAggregate(contextErrors)
 }
 
-func (rcp *Producer) overrideContextAndRun(clusterName, contextName string, function PerContextFn, status reporter.Interface) error {
-	fmt.Printf("Cluster %q\n", clusterName)
+func (rcp *Producer) overrideContextAndRun(contextName string, function PerContextFn, status reporter.Interface) error {
+	// fmt.Printf("Cluster %q\n", clusterName)
 
 	rcp.defaultClientConfig.overrides.CurrentContext = contextName
 	if err := rcp.RunOnSelectedContext(function, status); err != nil {
@@ -576,10 +576,14 @@ func (rcp *Producer) CheckVersionMismatch(cmd *cobra.Command, args []string) err
 func IfSubmarinerInstalled(functions ...PerContextFn) PerContextFn {
 	return func(clusterInfo *cluster.Info, namespace string, status reporter.Interface) error {
 		if clusterInfo.Submariner == nil {
+			fmt.Printf("Cluster %q\n", clusterInfo.Name)
 			status.Warning(constants.SubmarinerNotInstalled)
 
 			return nil
 		}
+
+		clusterInfo.Name = clusterInfo.Submariner.Status.ClusterID
+		fmt.Printf("Cluster %s\n", clusterInfo.Name)
 
 		aggregateErrors := []error{}
 
