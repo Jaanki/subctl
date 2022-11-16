@@ -185,8 +185,6 @@ func getGatewayIP(clusterInfo *cluster.Info, localClusterID string, status repor
 func verifyConnectivity(localClusterInfo, remoteClusterInfo *cluster.Info, namespace string, options FirewallOptions,
 	status reporter.Interface, targetPort TargetPort, message string,
 ) error {
-	mustHaveSubmariner(localClusterInfo)
-	mustHaveSubmariner(remoteClusterInfo)
 
 	status.Start(message)
 	defer status.End()
@@ -246,7 +244,7 @@ func verifyConnectivity(localClusterInfo, remoteClusterInfo *cluster.Info, names
 
 	gatewayPodIP, err := getGatewayIP(remoteClusterInfo, localClusterInfo.Submariner.Status.ClusterID, status)
 	if err != nil {
-		return status.Error(err, "Error retrieving the gateway IP of cluster %q", localClusterInfo.Name)
+		return status.Error(err, "Error retrieving the gateway IP of cluster %q", localClusterInfo.Submariner.Status.ClusterID)
 	}
 
 	podCommand = fmt.Sprintf("for x in $(seq 1000); do echo %s; done | for i in $(seq 5);"+
@@ -257,7 +255,8 @@ func verifyConnectivity(localClusterInfo, remoteClusterInfo *cluster.Info, names
 	cPod, err := spawnClientPodOnNonGatewayNodeWithHostNet(remoteClusterInfo.ClientProducer.ForKubernetes(), namespace,
 		podCommand, localClusterInfo.GetImageRepositoryInfo())
 	if err != nil {
-		return status.Error(err, "Error spawning the client pod on non-Gateway node of cluster %q", remoteClusterInfo.Name)
+		return status.Error(err, "Error spawning the client pod on non-Gateway node of cluster %q",
+			remoteClusterInfo.Submariner.Status.ClusterID)
 	}
 
 	defer cPod.Delete()

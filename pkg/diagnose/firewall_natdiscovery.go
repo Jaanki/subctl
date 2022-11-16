@@ -28,13 +28,16 @@ import (
 func NatDiscoveryConfigAcrossClusters(localClusterInfo, remoteClusterInfo *cluster.Info, namespace string, options FirewallOptions,
 	status reporter.Interface,
 ) error {
-	message := fmt.Sprintf("Checking if nat-discovery port is opened on the gateway node of cluster %q", localClusterInfo.Name)
+	mustHaveSubmariner(localClusterInfo)
+	mustHaveSubmariner(remoteClusterInfo)
+
+	message := fmt.Sprintf("Checking if nat-discovery port is opened on the gateway node of cluster %q", localClusterInfo.Submariner.Status.ClusterID)
 
 	err := verifyConnectivity(localClusterInfo, remoteClusterInfo, namespace, options, status, NatDiscoveryPort, message)
 	if err != nil {
-		status.Failure("Could not determine if nat-discovery port is allowed in the cluster %q", localClusterInfo.Name)
+		status.Failure("Could not determine if nat-discovery port is allowed in the cluster %q", localClusterInfo.Submariner.Status.ClusterID)
 	} else {
-		status.Success("nat-discovery port is allowed in the cluster %q", localClusterInfo.Name)
+		status.Success("nat-discovery port is allowed in the cluster %q", localClusterInfo.Submariner.Status.ClusterID)
 	}
 
 	return err

@@ -28,13 +28,16 @@ import (
 func TunnelConfigAcrossClusters(localClusterInfo, remoteClusterInfo *cluster.Info, namespace string, options FirewallOptions,
 	status reporter.Interface,
 ) error {
-	message := fmt.Sprintf("Checking if tunnels can be setup on the gateway node of cluster %q", localClusterInfo.Name)
+	mustHaveSubmariner(localClusterInfo)
+	mustHaveSubmariner(remoteClusterInfo)
+
+	message := fmt.Sprintf("Checking if tunnels can be setup on the gateway node of cluster %q", localClusterInfo.Submariner.Status.ClusterID)
 
 	err := verifyConnectivity(localClusterInfo, remoteClusterInfo, namespace, options, status, TunnelPort, message)
 	if err != nil {
-		status.Failure("Could not determine if Tunnels can be established on the gateway node of cluster %q", localClusterInfo.Name)
+		status.Failure("Could not determine if Tunnels can be established on the gateway node of cluster %q", localClusterInfo.Submariner.Status.ClusterID)
 	} else {
-		status.Success("Tunnels can be established on the gateway node of cluster %q", localClusterInfo.Name)
+		status.Success("Tunnels can be established on the gateway node of cluster %q", localClusterInfo.Submariner.Status.ClusterID)
 	}
 
 	return err
