@@ -62,7 +62,7 @@ func NewBrokerAdminRole() *rbacv1.Role {
 			{
 				Verbs:     []string{"create", "get", "list", "delete"},
 				APIGroups: []string{"rbac.authorization.k8s.io"},
-				Resources: []string{"rolebindings"},
+				Resources: []string{"rolebindings", "roles"},
 			},
 			{
 				Verbs:     []string{"create", "get", "list", "watch", "patch", "update", "delete"},
