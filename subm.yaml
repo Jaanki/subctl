@@ -1,0 +1,27 @@
+apiVersion: krew.googlecontainertools.github.com/v1alpha2
+kind: Plugin
+metadata:
+  name: subm
+spec:
+  version: "v0.16.0"
+  homepage: https://github.com/submariner-io/subctl
+  shortDescription: "Manages Submariner and its services"
+  description: |
+    CLI to install, uninstall and troubleshoot Submariner on a Kubernetes cluster.
+  platforms:
+    - selector:
+        matchLabels:
+          os: linux
+          arch: amd64
+      uri: https://github.com/submariner-io/releases/releases/download/v0.15.0/subctl-v0.15.0-linux-amd64.tar.gz
+      sha256: "01446138f85a70e4802216cbb59250d21ecfe33d69044b7ff4a9e7ad781ac1a1"
+      files:
+        - from: "subctl-*/subctl-*"
+          to: subctl
+      bin: subctl
+
+# Edit make target to generate tars
+#dist/subctl-%: cmd/bin/subctl-$(VERSION)-$(GOOS)-$(GOARCH)$(GOEXE)
+#  mkdir -p dist
+#  tar -cJf $@.tar.xz --transform "s/^cmd.bin/subctl-$(VERSION)/" $<
+#  tar -cvzf $@.tar.gz --transform "s/^cmd.bin/subctl-$(VERSION)/" $<
